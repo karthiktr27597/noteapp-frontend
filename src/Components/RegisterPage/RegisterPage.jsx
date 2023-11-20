@@ -2,16 +2,41 @@ import React from 'react'
 import { useState } from 'react';
 import Header from '../Header/Header';
 import './Register.css';
+import { registerApi } from '../Api/login';
+import { useNavigate } from 'react-router-dom';
+
 
 function RegisterPage() {
 
-  const [username, setUsername] = useState('');
+  const [fullname, setFullname] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('')
-  const [errorMessage, setErrorMessage] = useState('');
+  const [message, setMessage] = useState('');
+  const navigate = useNavigate()
 
-  const handleLogin = (e) => {
-    e.target.value()
+
+  const handleRegister = async (e) => {
+    try {
+      e.preventDefault();
+      const response = await registerApi({ fullname, email, password })
+      console.log(response)
+      if (response.data === "Mail Sent") {
+        setMessage("Activation link Sent to Email");
+        alert("Please check you email for account activation")
+      } else if (response.data === 'User already Registered') {
+        setMessage("User already Registered");
+      } else if (response.data === "Server Busy") {
+        setMessage("Server Busy");
+      }
+
+      setFullname('')
+      setEmail('')
+      setPassword('')
+
+    } catch (error) {
+      console.error('Error logging in:', error);
+      setMessage('Error logging in');
+    }
   }
 
   return (
@@ -21,22 +46,23 @@ function RegisterPage() {
         <div className="row justify-content-center mt-5 lh-lg">
           <div className="col-md-6">
             <div className="card">
-              <div className="card-header">User Register</div>
+              <div className="card-header text-center fs-4">User Register</div>
               <div className="card-body">
-                {errorMessage && (
+                {message && (
                   <div className="alert alert-danger" role="alert">
-                    {errorMessage}
+                    {message}
                   </div>
                 )}
-                <form onSubmit={handleLogin}>
+                <form onSubmit={handleRegister}>
                   <div className="form-group">
-                    <label htmlFor="username">Username</label>
+                    <label htmlFor="fullname">Full Name</label>
                     <input
                       type="text"
                       className="form-control"
-                      id="username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      id="fullname"
+                      value={fullname}
+                      required
+                      onChange={(e) => setFullname(e.target.value)}
                     />
                   </div>
                   <div className="form-group">
@@ -46,6 +72,8 @@ function RegisterPage() {
                       className="form-control"
                       id="email"
                       value={email}
+                      required
+                      onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
                   <div className="form-group">
@@ -55,13 +83,16 @@ function RegisterPage() {
                       className="form-control"
                       id="password"
                       value={password}
+                      required
                       onChange={(e) => setPassword(e.target.value)}
                     />
                   </div>
                   <button type="submit" className="btn btn-primary mt-3">Register</button>
                 </form>
               </div>
+
             </div>
+            <div className='text-success text-end cursor-pointer' role='button' onClick={() => navigate("/login")}>Login?</div>
           </div>
         </div>
       </div>
@@ -69,6 +100,7 @@ function RegisterPage() {
         <p>&copy; {new Date().getFullYear()} NoteApp. Developed By Karthik T R</p>
       </footer>
     </div>
+
   )
 }
 

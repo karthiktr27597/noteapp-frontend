@@ -1,28 +1,42 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useState } from 'react';
-import "./LoginPage.css"
 import Header from '../Header/Header';
+import { loginApi } from '../Api/login';
+import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import "./LoginPage.css"
 
 function LoginPage() {
 
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const navigate = useNavigate();
+    const [input] = useSearchParams();
+
+    useEffect(() => {
+        console.log(input.get('newuser'))
+        if (input.get('newuser')) {
+            alert('Account Activated')
+        }
+    }, [])
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        // try {
-        //     const response = await login({ username, password })
-        //     if (response.data.token) {
-        //         localStorage.setItem("token", response.data.token)
-        //         Navigate('/landingpage');
-        //     } else {
-        //         setErrorMessage('Invalid username or password');
-        //     }
-        // } catch (error) {
-        //     console.error('Error logging in:', error);
-        //     setErrorMessage('Error logging in');
-        // }
+        console.log(email, password)
+        try {
+            const response = await loginApi({ email, password })
+            console.log(response)
+            if (response.data.token) {
+                localStorage.setItem("token", response.data.token)
+                navigate('/home');
+            } else {
+                setErrorMessage(response.data);
+            }
+        } catch (error) {
+            console.error('Error logging in:', error);
+            setErrorMessage('Error logging in');
+        }
     };
 
 
@@ -34,7 +48,7 @@ function LoginPage() {
                 <div className="row justify-content-center mt-5 lh-lg">
                     <div className="col-md-6">
                         <div className="card">
-                            <div className="card-header">User Login</div>
+                            <div className="card-header text-center text-bold fs-4">User Login</div>
                             <div className="card-body">
                                 {errorMessage && (
                                     <div className="alert alert-danger" role="alert">
@@ -43,13 +57,14 @@ function LoginPage() {
                                 )}
                                 <form onSubmit={handleLogin}>
                                     <div className="form-group">
-                                        <label htmlFor="username">Username</label>
+                                        <label htmlFor="email">Email ID</label>
                                         <input
                                             type="text"
                                             className="form-control"
-                                            id="username"
-                                            value={username}
-                                            onChange={(e) => setUsername(e.target.value)}
+                                            id="email"
+                                            value={email}
+                                            required
+                                            onChange={(e) => setEmail(e.target.value)}
                                         />
                                     </div>
                                     <div className="form-group">
@@ -59,11 +74,16 @@ function LoginPage() {
                                             className="form-control"
                                             id="password"
                                             value={password}
+                                            required
                                             onChange={(e) => setPassword(e.target.value)}
                                         />
                                     </div>
                                     <button type="submit" className="btn btn-primary mt-3">Login</button>
                                 </form>
+                            </div>
+                            <div className="card-footer d-flex justify-content-between">
+                                <div className='text-danger' role='button' onClick={() => navigate("/forgotpassword")}>ForgetPassword?</div>
+                                <div className='text-success' role='button' onClick={() => navigate("/register")}>Register?</div>
                             </div>
                         </div>
                     </div>
